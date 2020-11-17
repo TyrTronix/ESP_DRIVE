@@ -1,0 +1,34 @@
+#######################################
+# Syntax Coloring Map ESP_DRIVE
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+ESP_DRIVE	KEYWORD1	ESP_DRIVE
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+init	KEYWORD2
+set_motor1_pins	KEYWORD2
+set_motor2_pins	KEYWORD2
+set_motor3_pins	KEYWORD2
+set_motor4_pins	KEYWORD2
+right KEYWORD2
+left KEYWORD2
+forward KEYWORD2
+backward KEYWORD2
+stop KEYWORD2
+turn KEYWORD2
+motor_test KEYWORD2
+drive_test KEYWORD2
+get_enc1_velocity_ticks KEYWORD2
+get_enc2_velocity_ticks KEYWORD2
+change_wheel_diameter KEYWORD2
+
+
+#######################################
+# Constants (LITERAL1)
+#######################################
