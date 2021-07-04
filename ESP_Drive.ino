@@ -128,14 +128,14 @@ void setup()
   Serial.begin(115200);
   init_Motors();
   //Test();
-  //Motor_Test();
+  Motor_Test();
   
-  forward(85);
+  //forward(85);
 }
 
 
 void loop() {
-  distance_mm();
+  //distance_mm();
   Serial.println("_______");
   Serial.println(get_delta_ticks1());
   Serial.println(get_delta_ticks2());

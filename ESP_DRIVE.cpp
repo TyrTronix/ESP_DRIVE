@@ -11,8 +11,8 @@ uint32_t encoder_ticks2_prev = 0;
 uint32_t delta_ticks1 = 0;
 uint32_t delta_ticks2 = 0;
 
-hw_timer_t * timer = NULL;
-portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
+static hw_timer_t * timer = NULL;
+static portMUX_TYPE timer_mux = portMUX_INITIALIZER_UNLOCKED;
 
 void M1_Stop()
 {
@@ -53,7 +53,7 @@ static void get_delta_t()
     prev_time = current_time;
 }
 
-void IRAM_ATTR encoder_tick1() 
+static void IRAM_ATTR encoder_tick1() 
 {
   if(digitalRead(ENCODER1)) return;
   get_delta_t();
@@ -61,7 +61,7 @@ void IRAM_ATTR encoder_tick1()
   zero_time();
 }
 
-void IRAM_ATTR encoder_tick2() 
+static void IRAM_ATTR encoder_tick2() 
 {
   if(digitalRead(ENCODER2)) return;
   get_delta_t();
@@ -69,14 +69,14 @@ void IRAM_ATTR encoder_tick2()
   zero_time();
 }
 
-void IRAM_ATTR onTimer()
+static void IRAM_ATTR onTimer()
 {
-  portENTER_CRITICAL_ISR(&timerMux);
+  portENTER_CRITICAL_ISR(&timer_mux);
   delta_ticks1 = encoder_ticks1;
   delta_ticks2 = encoder_ticks2;
   //encoder_ticks1 = 0;
   //encoder_ticks2 = 0;
-  portEXIT_CRITICAL_ISR(&timerMux);
+  portEXIT_CRITICAL_ISR(&timer_mux);
 }
 
 uint32_t get_delta_ticks1()
@@ -101,6 +101,9 @@ void init_Motors()
   pinMode(M4_Neg, OUTPUT);
   pinMode(TRIG, OUTPUT);
   pinMode(ECHO, INPUT);
+
+  pinMode(nSLEEP, OUTPUT);
+  digitalWrite(nSLEEP, 0);
 
   // Init Encoder
   pinMode(ENCODER1, INPUT_PULLUP);
@@ -139,8 +142,37 @@ void init_Motors()
   M4_Stop();
 }
 
+void M1_BRAKE()
+{
+  digitalWrite(nSLEEP, 1);
+  ledcWrite(M1_CH_N, 100);
+  ledcWrite(M1_CH_P, 100);
+}
+
+void M2_BRAKE()
+{
+  digitalWrite(nSLEEP, 1);
+  ledcWrite(M2_CH_N, 100);
+  ledcWrite(M2_CH_P, 100);
+}
+
+void M3_BRAKE()
+{
+  digitalWrite(nSLEEP, 1);
+  ledcWrite(M3_CH_N, 100);
+  ledcWrite(M3_CH_P, 100);
+}
+
+void M4_BRAKE()
+{
+  digitalWrite(nSLEEP, 1);
+  ledcWrite(M4_CH_N, 100);
+  ledcWrite(M4_CH_P, 100);
+}
+
 void M1_PWM(int pwm)
 {
+  digitalWrite(nSLEEP, 1);
   if(pwm>0)
   {
     ledcWrite(M1_CH_N, 0);
@@ -156,6 +188,7 @@ void M1_PWM(int pwm)
 
 void M2_PWM(int pwm)
 {
+  digitalWrite(nSLEEP, 1);
   if(pwm>0)
   {
     ledcWrite(M2_CH_N, 0);
@@ -171,13 +204,15 @@ void M2_PWM(int pwm)
 
 void M3_PWM(int pwm)
 {
+  digitalWrite(nSLEEP, 1);
   if(pwm>0)
   {
     ledcWrite(M3_CH_P, abs(pwm));
     ledcWrite(M3_CH_N, 0);
     return;
   }
-  else{
+  else
+  {
     ledcWrite(M3_CH_P, 0);
     ledcWrite(M3_CH_N, abs(pwm));
   }
@@ -185,6 +220,7 @@ void M3_PWM(int pwm)
 
 void M4_PWM(int pwm)
 {
+  digitalWrite(nSLEEP, 1);
   if(pwm>0)
   {
     ledcWrite(M4_CH_P, abs(pwm));
@@ -196,6 +232,14 @@ void M4_PWM(int pwm)
     ledcWrite(M4_CH_P, 0);
     ledcWrite(M4_CH_N, abs(pwm));
   }
+}
+
+void brake()
+{
+  M1_BRAKE();
+  M2_BRAKE();
+  M3_BRAKE();
+  M4_BRAKE();
 }
 
 void backward(int speed)
@@ -245,13 +289,15 @@ void right(int speed)
 void stop()
 {
   Serial.print("Stop ");
+  digitalWrite(nSLEEP, 0);
   M1_Stop();
   M2_Stop();
   M3_Stop();
   M4_Stop();
 }
 
-int distance_mm(){
+int distance_mm()
+{
   long  duration_us;
   int distance_mm;
   
@@ -267,7 +313,8 @@ int distance_mm(){
   return(distance_mm);
 }
 
-int distance_cm(){
+int distance_cm()
+{
   int distance_cm = distance_mm()/10;
   Serial.print("Distance in cm: ");
   Serial.println(distance_cm);
